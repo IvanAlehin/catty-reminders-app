@@ -11,8 +11,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Copy files to VM (excluding .git, .github, venv)
+      - name: Remove .git folder (not needed on VM)
+        run: rm -rf .git
+
+      - name: Copy files to VM
         uses: appleboy/scp-action@v1
         with:
           host: course.prafdin.ru
@@ -23,11 +28,6 @@ jobs:
           target: "/home/ivan/app"
           strip_components: 1
           overwrite: true
-          exclude: |
-            .git
-            .gitignore
-            .github
-            venv
 
       - name: Install dependencies and restart app
         uses: appleboy/ssh-action@v1
