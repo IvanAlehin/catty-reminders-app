@@ -1,0 +1,42 @@
+name: CD
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to VM
+        uses: appleboy/scp-action@v1
+        with:
+          host: course.prafdin.ru
+          port: 2422
+          username: ivan
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: "/home/ivan/app"
+          strip_components: 1
+          overwrite: true
+
+      - name: Install dependencies and restart app
+        uses: appleboy/ssh-action@v1
+        with:
+          host: course.prafdin.ru
+          port: 2422
+          username: ivan
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ivan/app
+            
+            python3 -m pip install --user --upgrade pip
+            pip install --user -r requirements.txt
+            
+            sudo systemctl restart catty-reminders
+            
+            echo "Deployment completed. App should be running on port 8181."
