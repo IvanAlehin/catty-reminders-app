@@ -34,9 +34,11 @@ jobs:
           script: |
             cd /home/ivan/app
             
-            python3 -m pip install --user --upgrade pip
-            pip install --user -r requirements.txt
+            ./venv/bin/pip install --upgrade pip
+            ./venv/bin/pip install -r requirements.txt
             
             sudo systemctl restart catty-reminders
             
-            echo "Deployment completed. App should be running on port 8181."
+            sudo systemctl status catty-reminders --no-pager -l
+            
+            echo "Deployment completed. App is running via systemd on port 8181."
