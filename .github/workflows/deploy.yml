@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy files to VM
+      - name: Copy files to VM (excluding .git, .github, venv)
         uses: appleboy/scp-action@v1
         with:
           host: course.prafdin.ru
@@ -23,6 +23,11 @@ jobs:
           target: "/home/ivan/app"
           strip_components: 1
           overwrite: true
+          exclude: |
+            .git
+            .gitignore
+            .github
+            venv
 
       - name: Install dependencies and restart app
         uses: appleboy/ssh-action@v1
@@ -33,12 +38,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ivan/app
-            
             ./venv/bin/pip install --upgrade pip
             ./venv/bin/pip install -r requirements.txt
-            
             sudo systemctl restart catty-reminders
-            
-            sudo systemctl status catty-reminders --no-pager -l
-            
-            echo "Deployment completed. App is running via systemd on port 8181."
+            echo "Deployment successful"
