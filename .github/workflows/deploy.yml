@@ -14,9 +14,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Remove .git folder (not needed on VM)
-        run: rm -rf .git
-
       - name: Copy files to VM
         uses: appleboy/scp-action@v1
         with:
