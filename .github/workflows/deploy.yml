@@ -9,27 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Remove .git folder (not needed on VM)
-        run: rm -rf .git
-
-      - name: Copy files to VM
-        uses: appleboy/scp-action@v1
-        with:
-          host: course.prafdin.ru
-          port: 2422
-          username: ivan
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
-          target: "/home/ivan/app"
-          strip_components: 1
-          overwrite: true
-
-      - name: Install dependencies and restart app
+      - name: Deploy Docker container to VM
         uses: appleboy/ssh-action@v1
         with:
           host: course.prafdin.ru
@@ -37,8 +17,16 @@ jobs:
           username: ivan
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ivan/app
-            ./venv/bin/pip install --upgrade pip
-            ./venv/bin/pip install -r requirements.txt
-            sudo systemctl restart catty-reminders
-            echo "Deployment successful"
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker stop catty-reminders || true
+            docker rm catty-reminders || true
+
+            docker run -d \
+              --name catty-reminders \
+              --restart unless-stopped \
+              -p 8181:8181 \
+              ghcr.io/ivanalehin/catty-reminders:latest
+
+            echo "Docker deployment completed"
+            echo "App available at http://app.alehin.course.prafdin.ru"
