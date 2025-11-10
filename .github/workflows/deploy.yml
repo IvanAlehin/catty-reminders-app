@@ -9,12 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get release commit SHA
-        id: get_sha
-        run: |
-          COMMIT_SHA=$(git ls-remote origin "refs/tags/${{ github.event.release.tag_name }}" | cut -f1)
-          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
-
       - name: Deploy Docker container to VM
         uses: appleboy/ssh-action@v1
         with:
@@ -23,7 +17,10 @@ jobs:
           username: ivan
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Вход в GHCR
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker pull ghcr.io/ivanalehin/catty-reminders:latest
 
             docker stop catty-reminders || true
             docker rm catty-reminders || true
@@ -32,7 +29,7 @@ jobs:
               --name catty-reminders \
               --restart unless-stopped \
               -p 8181:8181 \
-              ghcr.io/ivanalehin/catty-reminders:${{ env.COMMIT_SHA }}
+              ghcr.io/ivanalehin/catty-reminders:latest
 
-            echo "Deployed image: ${{ env.COMMIT_SHA }}"
+            echo "Deployment completed"
             echo "App available at http://app.alehin.course.prafdin.ru"
