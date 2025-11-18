@@ -55,4 +55,4 @@ jobs:
             echo 'Containers status:'
             docker compose ps
             echo 'Application: http://app.alehin.course.prafdin.ru'
-        "
+          "
