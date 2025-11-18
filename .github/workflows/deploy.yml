@@ -19,23 +19,20 @@ jobs:
           chmod 600 ~/.ssh/vm_key
           ssh-keyscan -p 2422 course.prafdin.ru >> ~/.ssh/known_hosts
 
+      - name: Copy docker-compose.yml to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: course.prafdin.ru
+          port: 2422
+          username: ivan
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/ivan/app/"
+          overwrite: true 
+
       - name: Deploy with Docker Compose to VM
         run: |
           echo "Starting Docker Compose deployment..."
-
-          ssh -i ~/.ssh/vm_key -p 2422 -o StrictHostKeyChecking=no \
-            -o ConnectTimeout=15 \
-            ivan@course.prafdin.ru "
-              echo 'Creating necessary directories...'
-              mkdir -p /home/ivan/app
-              echo 'Directory /home/ivan/app ensured.'
-          " || exit 1
-          
-          scp -i ~/.ssh/vm_key 
-              -P 2422 
-              -o StrictHostKeyChecking=no \
-              ./docker-compose.yml \
-              ivan@course.prafdin.ru:/home/ivan/app/docker-compose.yml
 
           ssh -i ~/.ssh/vm_key 
               -p 2422 
