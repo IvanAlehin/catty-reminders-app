@@ -22,6 +22,15 @@ jobs:
       - name: Deploy with Docker Compose to VM
         run: |
           echo "Starting Docker Compose deployment..."
+
+          ssh -i ~/.ssh/vm_key -p 2422 -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=15 \
+            ivan@course.prafdin.ru "
+              echo 'Creating necessary directories...'
+              mkdir -p /home/ivan/app
+              echo 'Directory /home/ivan/app ensured.'
+          " || exit 1
+          
           scp -i ~/.ssh/vm_key 
               -P 2422 
               -o StrictHostKeyChecking=no \
