@@ -32,42 +32,21 @@ jobs:
 
       - name: Deploy with Docker Compose to VM
         run: |
-          echo "Starting Docker Compose deployment..."
-
-          ssh -i ~/.ssh/vm_key -p 2422 -o StrictHostKeyChecking=no \
-            -o ConnectTimeout=15 \
-            ivan@course.prafdin.ru 'bash -l -c "
-            set -e # Завершить скрипт при первой ошибке
-
-            cd /home/ivan/app || { echo \"Failed to cd to /home/ivan/app\"; exit 1; }
-            echo \"Current directory: $(pwd)\"
-            echo \"Contents of /home/ivan/app:\"
-            ls -la
-
-            if [ ! -f docker-compose.yml ]; then
-                echo \"Error: docker-compose.yml not found in /home/ivan/app\"
-                exit 1
-            fi
-            echo \"Found docker-compose.yml\"
-
-            echo \"Logging in to GHCR...\"
-            echo \"${{ secrets.GITHUB_TOKEN }}\" | docker login ghcr.io -u \"${{ github.actor }}\" --password-stdin || { echo \"Docker login failed\"; exit 1; }
-
-            echo \"Pulling latest images...\"
-            docker compose -f docker-compose.yml pull || { echo \"Docker compose pull failed\"; exit 1; }
-
-            echo \"Stopping and removing old containers...\"
-            docker compose -f docker-compose.yml down || { echo \"Docker compose down failed\"; exit 1; }
-
-            echo \"Starting new containers with Docker Compose...\"
-            docker compose -f docker-compose.yml up -d || { echo \"Docker compose up failed\"; exit 1; }
-
-            echo \"Cleaning up...\"
+          ssh -i ~/.ssh/vm_key 
+              -p 2422 
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              ivan@course.prafdin.ru "
+            cd /home/ivan/app
+            
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml down
+            docker compose -f docker-compose.yml up -d
+            
             docker image prune -f
-
-            echo \"Docker Compose deployment completed!\"
-            echo \"Containers status:\"
+            
+            echo 'Deployment completed'
             docker compose -f docker-compose.yml ps
-            echo \"Application: http://app.alehin.course.prafdin.ru\"
-            "'
-
+          "
