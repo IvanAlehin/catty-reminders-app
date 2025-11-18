@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy Docker container to VM
+      - name: Deploy with Docker Compose to VM
         uses: appleboy/ssh-action@v1
         with:
           host: course.prafdin.ru
@@ -17,19 +17,39 @@ jobs:
           username: ivan
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Вход в GHCR
+            mkdir -p /home/ivan/compose
+
+            cat <<EOF > /home/ivan/compose/docker-compose.yml
+name: catty-reminders
+
+services:
+  app:
+    image: ghcr.io/ivanalehin/catty-reminders:latest
+    container_name: catty-app
+    ports:
+      - "8181:8181"
+    volumes:
+      - reminders_data:/app/reminder_db.json
+    restart: unless-stopped
+    environment:
+      - DB_PATH=/app/reminder_db.json
+
+volumes:
+  reminders_data:
+    name: catty_reminders_db
+EOF
+
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker pull ghcr.io/ivanalehin/catty-reminders:latest
+            docker compose -f /home/ivan/compose/docker-compose.yml pull
 
-            docker stop catty-reminders || true
-            docker rm catty-reminders || true
+            docker compose -f /home/ivan/compose/docker-compose.yml down
 
-            docker run -d \
-              --name catty-reminders \
-              --restart unless-stopped \
-              -p 8181:8181 \
-              ghcr.io/ivanalehin/catty-reminders:latest
+            docker compose -f /home/ivan/compose/docker-compose.yml up -d
 
-            echo "Deployment completed"
+            docker image prune -f
+
+            docker compose -f /home/ivan/compose/docker-compose.yml ps
+
+            echo "Docker Compose deployment completed"
             echo "App available at http://app.alehin.course.prafdin.ru"
