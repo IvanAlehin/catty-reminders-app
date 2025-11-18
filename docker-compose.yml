@@ -1,16 +1,22 @@
 services:
   app:
     image: ghcr.io/ivanalehin/catty-reminders:latest
+    container_name: catty-app
     ports:
       - "8181:8181"
     depends_on:
       - db
-    volumes:
-      - ./config.json:/catty-reminders-app/config.json:ro
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: catty_reminders
+      DB_USER: root
+      DB_PASSWORD: mypass
     restart: unless-stopped
 
   db:
     image: mysql:8.0
+    container_name: catty-db
     environment:
       MYSQL_ROOT_PASSWORD: mypass
       MYSQL_DATABASE: catty_reminders
