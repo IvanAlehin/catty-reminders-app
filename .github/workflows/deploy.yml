@@ -9,27 +9,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy Docker container to VM
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Docker Compose stack to VM
         uses: appleboy/ssh-action@v1
         with:
           host: course.prafdin.ru
           port: 2422
           username: ivan
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          upload: |
+            docker-compose.yml -> /home/ivan/app/docker-compose.yml
           script: |
-            # Вход в GHCR
+            cd /home/ivan/app
+
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker pull ghcr.io/ivanalehin/catty-reminders:latest
+            docker compose pull
+            docker compose down
+            docker compose up -d
 
-            docker stop catty-reminders || true
-            docker rm catty-reminders || true
+            docker compose ps
 
-            docker run -d \
-              --name catty-reminders \
-              --restart unless-stopped \
-              -p 8181:8181 \
-              ghcr.io/ivanalehin/catty-reminders:latest
+            docker image prune -f
 
-            echo "Deployment completed"
+            echo "Docker Compose deployment completed"
             echo "App available at http://app.alehin.course.prafdin.ru"
