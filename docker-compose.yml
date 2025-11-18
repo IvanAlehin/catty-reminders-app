@@ -1,0 +1,17 @@
+name: catty-reminders
+
+services:
+  app:
+    image: ghcr.io/ivanalehin/catty-reminders:latest
+    container_name: catty-app
+    ports:
+      - "8181:8181"
+    volumes:
+      - reminders_data:/app/reminder_db.json
+    restart: unless-stopped
+    environment:
+      - DB_PATH=/app/reminder_db.json
+
+volumes:
+  reminders_data:
+    name: catty_reminders_db
