@@ -68,5 +68,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/catty-reminders:latest
-            ghcr.io/${{ github.repository_owner }}/catty-reminders:${{ github.sha }}
+            ghcr.io/ivanalehin/catty-reminders:latest
+            ghcr.io/ivanalehin/catty-reminders:${{ github.sha }}
