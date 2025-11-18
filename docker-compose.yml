@@ -1,4 +1,4 @@
-name: catty-reminders
+version: '3.8'
 
 services:
   app:
@@ -6,12 +6,27 @@ services:
     container_name: catty-app
     ports:
       - "8181:8181"
-    volumes:
-      - reminders_data:/app/reminder_db.json
-    restart: unless-stopped
+    depends_on:
+      - db
     environment:
-      - DB_PATH=/app/reminder_db.json
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: reminders_db
+      DB_USER: app_user
+      DB_PASSWORD: app_password_here
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: catty-db
+    environment:
+      MYSQL_ROOT_PASSWORD: your_root_password_here
+      MYSQL_DATABASE: reminders_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password_here
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
 
 volumes:
-  reminders_data:
-    name: catty_reminders_db
+  mysql_data:
