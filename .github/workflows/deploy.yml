@@ -32,11 +32,8 @@ jobs:
 
       - name: Deploy with Docker Compose to VM
         run: |
-          ssh -i ~/.ssh/vm_key 
-              -p 2422 
-              -o StrictHostKeyChecking=no \
-              -o ConnectTimeout=15 \
-              ivan@course.prafdin.ru "
+          ssh -i ~/.ssh/vm_key -p 2422 -o StrictHostKeyChecking=no -o ConnectTimeout=15 ivan@course.prafdin.ru "
+          
             cd /home/ivan/app
             
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
